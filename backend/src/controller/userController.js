@@ -1,5 +1,5 @@
 import User from "../models/user.js";
-import FriendRequest from "../models/friendRequest.js";
+import FriendRequest from "../models/FriendRequest.js";
 
 export async function getRecommendedUsers(req, res) {
   try {
@@ -69,7 +69,7 @@ export async function sendFriendRequest(req, res) {
 
     const friendRequest = await FriendRequest.create({
       sender: myId,
-      recipient: recipientId, 
+      recipient: recipientId,
     });
 
     res.status(201).json(friendRequest);

@@ -5,13 +5,15 @@ import userRoutes from "./route/userroute.js";
 import chatRoutes from "./route/chatroute.js";
 import {dbConnect} from "./lib/db.js";
 import cookieParser from "cookie-parser";
-// import cors from "cors";
+import cors from "cors";
+
+
 const app = express();
 const PORT = process.env.PORT || 5001;
-// app.use(cors({
-//     origin: 'http://localhost:5173',
-//     credentials:true, // Allow credentials (cookies, authorization headers, etc.)
-// }))
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials:true, // Allow credentials (cookies, authorization headers, etc.)
+}))
 app.use(express.json());
 app.use(cookieParser());
 
