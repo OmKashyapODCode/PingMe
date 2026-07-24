@@ -11,27 +11,24 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://ping-me-gold.vercel.app"
-];
-
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
-}
-
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman)
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     
-    // Allow exact matches
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    
-    // Allow any vercel domain just in case of preview deployments
-    if (origin.endsWith(".vercel.app")) return callback(null, true);
+    // Check if origin is allowed
+    const isAllowed = 
+      origin.includes("localhost") || 
+      origin.includes("vercel.app") || 
+      origin.includes("onrender.com") ||
+      origin === process.env.FRONTEND_URL;
 
-    callback(new Error(`CORS: Origin ${origin} not allowed`));
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // Return false instead of throwing an Error to prevent noisy logs
+      callback(null, false);
+    }
   },
   credentials: true,
 }));
