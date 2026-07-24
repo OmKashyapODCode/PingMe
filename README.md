@@ -57,7 +57,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [https://ping-me-gold.vercel.app/](https://ping-me-gold.vercel.app/)
 
 ---
 
