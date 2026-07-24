@@ -3,12 +3,15 @@ import useAuthUser from "../hooks/useAuthUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { completeOnboarding } from "../lib/api";
-import { LoaderIcon, MapPinIcon, ShipWheelIcon, ShuffleIcon } from "lucide-react";
+import { LoaderIcon, MapPinIcon, ShipWheelIcon, ShuffleIcon, LinkIcon, XIcon } from "lucide-react";
 import { LANGUAGES } from "../constants";
+import Avatar from "../components/Avatar";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
   const queryClient = useQueryClient();
+  const [urlInput, setUrlInput] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
 
   const [formState, setFormState] = useState({
     fullName: authUser?.fullName || "",
@@ -25,7 +28,6 @@ const OnboardingPage = () => {
       toast.success("Profile onboarded successfully");
       queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
-
     onError: (error) => {
       toast.error(error.response.data.message);
     },
@@ -33,17 +35,35 @@ const OnboardingPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     onboardingMutation(formState);
   };
 
   const handleRandomAvatar = () => {
-    const idx = Math.floor(Math.random() * 100) + 1; // 1-100 included
+    const idx = Math.floor(Math.random() * 100) + 1;
     const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
-
     setFormState({ ...formState, profilePic: randomAvatar });
-    toast.success("Random profile picture generated!");
+    setShowUrlInput(false);
+    toast.success("Random avatar generated!");
   };
+
+  const handleUrlSubmit = () => {
+    if (!urlInput.trim()) return;
+    setFormState({ ...formState, profilePic: urlInput.trim() });
+    setShowUrlInput(false);
+    setUrlInput("");
+    toast.success("Profile picture updated!");
+  };
+
+  const handleRemovePic = () => {
+    setFormState({ ...formState, profilePic: "" });
+    setShowUrlInput(false);
+    toast.success("Profile picture removed");
+  };
+
+  // Generate initials for default avatar
+  const initials = formState.fullName
+    ? formState.fullName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
+    : "?";
 
   return (
     <div className="min-h-screen bg-base-100 flex items-center justify-center p-4">
@@ -52,30 +72,77 @@ const OnboardingPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">Complete Your Profile</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* PROFILE PIC CONTAINER */}
-            <div className="flex flex-col items-center justify-center space-y-4">
-              {/* IMAGE PREVIEW */}
-              <div className="size-32 rounded-full bg-base-300 overflow-hidden">
-                {formState.profilePic ? (
-                  <img
-                    src={formState.profilePic}
-                    alt="Profile Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <CameraIcon className="size-12 text-base-content opacity-40" />
-                  </div>
+
+            {/* ── PROFILE PIC EDITOR ── */}
+            <div className="flex flex-col items-center gap-4">
+
+              {/* Avatar Preview using the reusable Avatar component */}
+              <div className="relative">
+                <Avatar
+                  src={formState.profilePic}
+                  alt={formState.fullName || "User"}
+                  size="3xl"
+                  className="ring-4 ring-base-300 ring-offset-2 ring-offset-base-200"
+                />
+                {/* Remove button — only if pic is set */}
+                {formState.profilePic && (
+                  <button
+                    type="button"
+                    onClick={handleRemovePic}
+                    className="absolute -top-1 -right-1 btn btn-error btn-circle btn-xs shadow-lg"
+                    title="Remove photo"
+                  >
+                    <XIcon className="size-3" />
+                  </button>
                 )}
               </div>
 
-              {/* Generate Random Avatar BTN */}
-              <div className="flex items-center gap-2">
-                <button type="button" onClick={handleRandomAvatar} className="btn btn-accent">
-                  <ShuffleIcon className="size-4 mr-2" />
-                  Generate Random Avatar
+              {/* Edit Options */}
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setShowUrlInput((v) => !v)}
+                  className="btn btn-outline btn-sm gap-2"
+                >
+                  <LinkIcon className="size-4" />
+                  {showUrlInput ? "Cancel" : "Use Image URL"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRandomAvatar}
+                  className="btn btn-accent btn-sm gap-2"
+                >
+                  <ShuffleIcon className="size-4" />
+                  Random Avatar
                 </button>
               </div>
+
+              {/* URL Input — shown on toggle */}
+              {showUrlInput && (
+                <div className="w-full flex gap-2 items-center animate-in slide-in-from-top-2">
+                  <input
+                    type="url"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleUrlSubmit())}
+                    className="input input-bordered flex-1 text-sm"
+                    placeholder="https://example.com/your-photo.jpg"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={handleUrlSubmit}
+                    className="btn btn-primary btn-sm"
+                    disabled={!urlInput.trim()}
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+
+              <p className="text-xs opacity-50 text-center">
+                You can skip this — your initials will be used as your avatar
+              </p>
             </div>
 
             {/* FULL NAME */}
@@ -169,7 +236,6 @@ const OnboardingPage = () => {
             </div>
 
             {/* SUBMIT BUTTON */}
-
             <button className="btn btn-primary w-full" disabled={isPending} type="submit">
               {!isPending ? (
                 <>

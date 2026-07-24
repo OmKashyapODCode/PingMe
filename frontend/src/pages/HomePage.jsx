@@ -13,6 +13,7 @@ import { capitialize } from "../lib/utils";
 
 import FriendCard, { getLanguageFlag } from "../components/FriendCard";
 import NoFriendsFound from "../components/NoFriendsFound";
+import Avatar from "../components/Avatar";
 
 const HomePage = () => {
   const queryClient = useQueryClient();
@@ -108,9 +109,7 @@ const HomePage = () => {
                   >
                     <div className="card-body p-5 space-y-4">
                       <div className="flex items-center gap-3">
-                        <div className="avatar size-16 rounded-full">
-                          <img src={user.profilePic} alt={user.fullName} />
-                        </div>
+                        <Avatar src={user.profilePic} alt={user.fullName} size="xl" />
 
                         <div>
                           <h3 className="font-semibold text-lg">{user.fullName}</h3>

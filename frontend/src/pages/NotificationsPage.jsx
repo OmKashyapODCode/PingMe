@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { acceptFriendRequest, getFriendRequests } from "../lib/api";
 import { BellIcon, ClockIcon, MessageSquareIcon, UserCheckIcon } from "lucide-react";
 import NoNotificationsFound from "../components/NoNotificationsFound";
+import Avatar from "../components/Avatar";
 
 const NotificationsPage = () => {
   const queryClient = useQueryClient();
@@ -50,9 +51,7 @@ const NotificationsPage = () => {
                       <div className="card-body p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="avatar w-14 h-14 rounded-full bg-base-300">
-                              <img src={request.sender.profilePic} alt={request.sender.fullName} />
-                            </div>
+                            <Avatar src={request.sender.profilePic} alt={request.sender.fullName} size="lg" />
                             <div>
                               <h3 className="font-semibold">{request.sender.fullName}</h3>
                               <div className="flex flex-wrap gap-1.5 mt-1">
@@ -94,12 +93,7 @@ const NotificationsPage = () => {
                     <div key={notification._id} className="card bg-base-200 shadow-sm">
                       <div className="card-body p-4">
                         <div className="flex items-start gap-3">
-                          <div className="avatar mt-1 size-10 rounded-full">
-                            <img
-                              src={notification.recipient.profilePic}
-                              alt={notification.recipient.fullName}
-                            />
-                          </div>
+                          <Avatar src={notification.recipient.profilePic} alt={notification.recipient.fullName} size="sm" className="mt-1" />
                           <div className="flex-1">
                             <h3 className="font-semibold">{notification.recipient.fullName}</h3>
                             <p className="text-sm my-1">

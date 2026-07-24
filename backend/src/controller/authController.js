@@ -30,14 +30,11 @@ export async function signupHandler(req, res) {
         .json({ message: "Email already exists, please use a different one" });
     }
 
-    const idx = Math.floor(Math.random() * 100) + 1;
-    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
-
     const newUser = await User.create({
       email,
       fullName,
       password,
-      profilePic: randomAvatar,
+      profilePic: "",
     });
 
     try {
