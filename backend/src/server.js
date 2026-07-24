@@ -13,14 +13,24 @@ const PORT = process.env.PORT || 5001;
 
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+  "https://ping-me-gold.vercel.app"
+];
+
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/$/, ""));
+}
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
+    
+    // Allow exact matches
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    // Allow any vercel domain just in case of preview deployments
+    if (origin.endsWith(".vercel.app")) return callback(null, true);
+
     callback(new Error(`CORS: Origin ${origin} not allowed`));
   },
   credentials: true,
