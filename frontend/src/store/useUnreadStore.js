@@ -22,6 +22,26 @@ export const useUnreadStore = create(
         });
       },
       
+      setUnreadData: (senderId, senderName, senderImage, count) => {
+        set((state) => {
+          if (count <= 0) {
+            const updated = { ...state.unreadBySender };
+            delete updated[senderId];
+            return { unreadBySender: updated };
+          }
+          return {
+            unreadBySender: {
+              ...state.unreadBySender,
+              [senderId]: {
+                name: senderName || "Someone",
+                profilePic: senderImage || "",
+                count: count,
+              },
+            },
+          };
+        });
+      },
+      
       clearUnreadForChannel: (channelId) => {
         set((state) => {
           const updated = { ...state.unreadBySender };

@@ -60,6 +60,28 @@ export const StreamClientProvider = ({ children }) => {
           );
         }
         
+        // Sync exact unread counts from Stream Chat Server
+        const filter = { type: "messaging", members: { $in: [authUser._id] } };
+        const sort = { last_message_at: -1 };
+        const channels = await client.queryChannels(filter, sort, {
+          watch: true,
+          state: true,
+        });
+
+        channels.forEach((channel) => {
+          const unreadCount = channel.countUnread();
+          if (unreadCount > 0) {
+            // Find the other user in the channel
+            const otherMember = Object.values(channel.state.members).find(
+              (m) => m.user.id !== authUser._id
+            );
+            if (otherMember) {
+              const u = otherMember.user;
+              useUnreadStore.getState().setUnreadData(u.id, u.name, u.image, unreadCount);
+            }
+          }
+        });
+        
         // Listen for new messages globally here
         handleNewMessage = (event) => {
           const msg = event.message;
@@ -76,6 +98,14 @@ export const StreamClientProvider = ({ children }) => {
         };
         
         client.on("message.new", handleNewMessage);
+        
+        // Also listen for mark read events (e.g. from another tab or device)
+        client.on("notification.mark_read", (event) => {
+           if (event.channel) {
+             const channelId = event.channel.id;
+             clearUnreadForChannel(channelId);
+           }
+        });
 
         setStreamClient(client);
       } catch (error) {
