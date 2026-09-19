@@ -5,14 +5,9 @@ import useUnreadMessages from "../hooks/useUnreadMessages";
 import Avatar from "../components/Avatar";
 
 // This page shows message notifications - who sent you unread messages
-// When user opens this page, all unread counts are cleared
+// Unread counts are cleared automatically when the user opens a specific chat
 const NotificationsPage = () => {
-  const { unreadBySender, totalUnread, clearAllUnread } = useUnreadMessages();
-
-  // Clear all unread message notifications when user opens this page
-  useEffect(() => {
-    clearAllUnread();
-  }, [clearAllUnread]);
+  const { unreadBySender, totalUnread } = useUnreadMessages();
 
   const senderList = Object.entries(unreadBySender);
 
@@ -69,7 +64,10 @@ const NotificationsPage = () => {
                           Sent you {sender.count} new {sender.count === 1 ? "message" : "messages"}
                         </p>
                       </div>
-                      <span className="badge badge-primary">{sender.count}</span>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className="badge badge-primary">{sender.count}</span>
+                        <span className="btn btn-primary btn-sm rounded-full px-4">View Chat</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
