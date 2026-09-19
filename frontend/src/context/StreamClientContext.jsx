@@ -3,21 +3,27 @@ import { StreamChat } from "stream-chat";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../lib/api";
 import useAuthUser from "../hooks/useAuthUser";
+import { useUnreadStore } from "../store/useUnreadStore";
+import { useLocation } from "react-router";
 
 const StreamClientContext = createContext(null);
 
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
-// Helper: base64 strings are too large for Stream WebSocket URL - skip them
 const getSafeImageUrl = (pic) => {
   if (!pic) return "";
-  if (pic.startsWith("data:")) return ""; // base64 - skip
-  return pic; // real URL - safe to use
+  if (pic.startsWith("data:")) return ""; 
+  return pic; 
 };
 
 export const StreamClientProvider = ({ children }) => {
   const { authUser } = useAuthUser();
+  const location = useLocation();
   const [streamClient, setStreamClient] = useState(null);
+  
+  // Zustand store actions
+  const incrementUnread = useUnreadStore((state) => state.incrementUnread);
+  const clearUnreadForChannel = useUnreadStore((state) => state.clearUnreadForChannel);
 
   const { data: tokenData } = useQuery({
     queryKey: ["streamToken"],
@@ -25,25 +31,51 @@ export const StreamClientProvider = ({ children }) => {
     enabled: !!authUser,
   });
 
+  // Handle clearing unread when entering a chat
+  useEffect(() => {
+    if (location.pathname.startsWith("/chat/")) {
+      const channelId = location.pathname.replace("/chat/", "");
+      clearUnreadForChannel(channelId);
+    }
+  }, [location.pathname, clearUnreadForChannel]);
+
   useEffect(() => {
     if (!authUser || !tokenData?.token || !STREAM_API_KEY) return;
 
+    let client;
+    let handleNewMessage;
+
     const connect = async () => {
       try {
-        const client = StreamChat.getInstance(STREAM_API_KEY);
+        client = StreamChat.getInstance(STREAM_API_KEY);
 
         if (!client.userID) {
           await client.connectUser(
             {
               id: authUser._id,
               name: authUser.fullName,
-              // IMPORTANT: never send base64 to Stream - WebSocket URL will be too large
               image: getSafeImageUrl(authUser.profilePic),
             },
             tokenData.token
           );
-          console.log("Stream connected for:", authUser.fullName);
         }
+        
+        // Listen for new messages globally here
+        handleNewMessage = (event) => {
+          const msg = event.message;
+          if (msg.user?.id === authUser._id) return; // Skip own messages
+
+          const senderId = msg.user?.id;
+          
+          // If already in that specific chat, don't increment
+          if (window.location.pathname.startsWith("/chat/") && window.location.pathname.includes(senderId)) {
+            return;
+          }
+          
+          incrementUnread(senderId, msg.user?.name, msg.user?.image);
+        };
+        
+        client.on("message.new", handleNewMessage);
 
         setStreamClient(client);
       } catch (error) {
@@ -54,14 +86,15 @@ export const StreamClientProvider = ({ children }) => {
     connect();
 
     return () => {
-      // Disconnect on logout
-      const client = StreamChat.getInstance(STREAM_API_KEY);
-      if (client.userID) {
+      if (client && handleNewMessage) {
+        client.off("message.new", handleNewMessage);
+      }
+      if (client && client.userID) {
         client.disconnectUser().catch(console.error);
         setStreamClient(null);
       }
     };
-  }, [authUser, tokenData]);
+  }, [authUser, tokenData, incrementUnread]);
 
   return (
     <StreamClientContext.Provider value={streamClient}>
@@ -70,5 +103,4 @@ export const StreamClientProvider = ({ children }) => {
   );
 };
 
-// Use this in any component to get the shared Stream client
 export const useStreamClient = () => useContext(StreamClientContext);
