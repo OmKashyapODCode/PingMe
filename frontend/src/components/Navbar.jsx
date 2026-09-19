@@ -46,7 +46,7 @@ const Navbar = () => {
 
           <div className="flex items-center gap-3 sm:gap-4 ml-auto">
             {/* Bell icon - badge shows pending friend requests + unread messages */}
-            <Link to="/friend-requests">
+            <Link to="/notifications">
               <button className="btn btn-ghost btn-circle relative">
                 <BellIcon className="h-6 w-6 text-base-content opacity-70" />
                 {/* Red badge visible when there are any notifications */}
