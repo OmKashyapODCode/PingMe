@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logout } from "../lib/api";
+import { useUnreadStore } from "../store/useUnreadStore";
 
 const useLogout = () => {
   const queryClient = useQueryClient();
+
+  const { clearAllUnread } = useUnreadStore();
 
   const {
     mutate: logoutMutation,
@@ -10,7 +13,10 @@ const useLogout = () => {
     error,
   } = useMutation({
     mutationFn: logout,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["authUser"] }),
+    onSuccess: () => {
+      clearAllUnread();
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
+    },
   });
 
   return { logoutMutation, isPending, error };
