@@ -68,8 +68,8 @@ const HomePage = () => {
     <div className="p-4 sm:p-6 lg:p-8 overflow-x-hidden">
       <div className="container mx-auto space-y-6">
         
-        {/* TOP BAR: Tabs + Friend Requests Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-base-300 pb-2">
+        {/* TOP BAR: Tabs */}
+        <div className="flex flex-col sm:flex-row items-center justify-start gap-4 border-b border-base-300 pb-2">
           
           {/* TABS */}
           <div className="tabs tabs-boxed bg-base-200">
@@ -86,11 +86,6 @@ const HomePage = () => {
               Meet New Learners
             </button>
           </div>
-
-          <Link to="/friend-requests" className="btn btn-outline">
-            <UsersIcon className="mr-2 size-4" />
-            Friend Requests
-          </Link>
         </div>
 
         {/* TAB CONTENT: FRIENDS */}
