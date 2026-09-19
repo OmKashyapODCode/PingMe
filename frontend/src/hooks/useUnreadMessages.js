@@ -1,11 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import { StreamChat } from "stream-chat";
-import { useQuery } from "@tanstack/react-query";
-import { getStreamToken } from "../lib/api";
 import useAuthUser from "./useAuthUser";
 import { useLocation } from "react-router";
-
-const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
+import { useStreamClient } from "../context/StreamClientContext";
 
 // This hook listens to incoming messages via Stream Chat
 // and tracks how many unread messages each sender has sent
@@ -13,84 +9,55 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 const useUnreadMessages = () => {
   const { authUser } = useAuthUser();
   const location = useLocation();
+  const chatClient = useStreamClient();
 
   // Object: senderId -> { name, profilePic, count }
   const [unreadBySender, setUnreadBySender] = useState({});
 
-  const { data: tokenData } = useQuery({
-    queryKey: ["streamToken"],
-    queryFn: getStreamToken,
-    enabled: !!authUser,
-  });
-
   useEffect(() => {
-    if (!authUser || !tokenData?.token || !STREAM_API_KEY) return;
+    // Wait until chatClient is available from context
+    if (!authUser || !chatClient) return;
 
-    let client;
-    let handleNewMessage;
+    // Called every time a new message is received in any channel
+    const handleNewMessage = (event) => {
+      const msg = event.message;
 
-    const connectAndListen = async () => {
-      try {
-        client = StreamChat.getInstance(STREAM_API_KEY);
+      // Skip messages sent by current user
+      if (msg.user?.id === authUser._id) return;
 
-        // Connect user only if not already connected
-        if (!client.userID) {
-          await client.connectUser(
-            {
-              id: authUser._id,
-              name: authUser.fullName,
-              image: authUser.profilePic,
-            },
-            tokenData.token
-          );
-        }
+      const senderId = msg.user?.id;
 
-        // Called every time a new message is received in any channel
-        handleNewMessage = (event) => {
-          const msg = event.message;
-
-          // Skip messages sent by current user
-          if (msg.user?.id === authUser._id) return;
-
-          const senderId = msg.user?.id;
-
-          // If user is currently in the chat with this sender, skip counting
-          if (
-            location.pathname.startsWith("/chat/") &&
-            location.pathname.includes(senderId)
-          ) {
-            return;
-          }
-
-          // Increment unread count for this sender
-          setUnreadBySender((prev) => {
-            const existing = prev[senderId] || { name: "", profilePic: "", count: 0 };
-            return {
-              ...prev,
-              [senderId]: {
-                name: msg.user?.name || "Someone",
-                profilePic: msg.user?.image || "",
-                count: existing.count + 1,
-              },
-            };
-          });
-        };
-
-        client.on("message.new", handleNewMessage);
-      } catch (error) {
-        console.log("useUnreadMessages: error connecting", error.message);
+      // If user is currently in the chat with this sender, skip counting
+      if (
+        location.pathname.startsWith("/chat/") &&
+        location.pathname.includes(senderId)
+      ) {
+        return;
       }
+
+      // Increment unread count for this sender
+      setUnreadBySender((prev) => {
+        const existing = prev[senderId] || { name: "", profilePic: "", count: 0 };
+        return {
+          ...prev,
+          [senderId]: {
+            name: msg.user?.name || "Someone",
+            profilePic: msg.user?.image || "",
+            count: existing.count + 1,
+          },
+        };
+      });
     };
 
-    connectAndListen();
+    chatClient.on("message.new", handleNewMessage);
 
     return () => {
       // Remove the event listener when component unmounts or deps change
-      if (client && handleNewMessage) {
-        client.off("message.new", handleNewMessage);
+      if (chatClient) {
+        chatClient.off("message.new", handleNewMessage);
       }
     };
-  }, [authUser, tokenData]);
+  }, [authUser, chatClient, location.pathname]);
 
   // When user enters a chat page, clear unread for that sender
   useEffect(() => {

@@ -7,6 +7,7 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { StreamClientProvider } from "./context/StreamClientContext.jsx";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,9 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <StreamClientProvider>
+          <App />
+        </StreamClientProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </StrictMode>
