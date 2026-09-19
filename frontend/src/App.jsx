@@ -4,6 +4,8 @@ import HomePage from "./pages/HomePage.jsx";
 import SignUpPage from "./pages/SignUpPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
+import FriendRequestsPage from "./pages/FriendRequestsPage.jsx";
+import ProfileEditPage from "./pages/ProfileEditPage.jsx";
 import CallPage from "./pages/CallPage.jsx";
 import ChatPage from "./pages/ChatPage.jsx";
 import OnboardingPage from "./pages/OnboardingPage.jsx";
@@ -27,6 +29,7 @@ const App = () => {
   return (
     <div className="h-screen" data-theme={theme}>
       <Routes>
+        {/* HOME PAGE */}
         <Route
           path="/"
           element={
@@ -39,18 +42,24 @@ const App = () => {
             )
           }
         />
+
+        {/* SIGNUP PAGE */}
         <Route
           path="/signup"
           element={
             !isAuthenticated ? <SignUpPage /> : <Navigate to={isOnboarded ? "/" : "/onboarding"} />
           }
         />
+
+        {/* LOGIN PAGE */}
         <Route
           path="/login"
           element={
             !isAuthenticated ? <LoginPage /> : <Navigate to={isOnboarded ? "/" : "/onboarding"} />
           }
         />
+
+        {/* NOTIFICATIONS PAGE - message notifications */}
         <Route
           path="/notifications"
           element={
@@ -63,6 +72,36 @@ const App = () => {
             )
           }
         />
+
+        {/* FRIEND REQUESTS PAGE - separate from notifications */}
+        <Route
+          path="/friend-requests"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <FriendRequestsPage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
+
+        {/* PROFILE EDIT PAGE */}
+        <Route
+          path="/profile"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <ProfileEditPage />
+              </Layout>
+            ) : (
+              <Navigate to={!isAuthenticated ? "/login" : "/onboarding"} />
+            )
+          }
+        />
+
+        {/* VIDEO CALL PAGE */}
         <Route
           path="/call/:id"
           element={
@@ -74,6 +113,7 @@ const App = () => {
           }
         />
 
+        {/* CHAT PAGE */}
         <Route
           path="/chat/:id"
           element={
@@ -87,6 +127,7 @@ const App = () => {
           }
         />
 
+        {/* ONBOARDING PAGE */}
         <Route
           path="/onboarding"
           element={

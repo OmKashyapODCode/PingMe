@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import useAuthUser from "../hooks/useAuthUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { completeOnboarding } from "../lib/api";
-import { LoaderIcon, MapPinIcon, ShipWheelIcon, ShuffleIcon, LinkIcon, XIcon } from "lucide-react";
+import {
+  LoaderIcon,
+  MapPinIcon,
+  ShipWheelIcon,
+  LinkIcon,
+  XIcon,
+  CameraIcon,
+} from "lucide-react";
 import { LANGUAGES } from "../constants";
 import Avatar from "../components/Avatar";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef(null);
+
   const [urlInput, setUrlInput] = useState("");
   const [showUrlInput, setShowUrlInput] = useState(false);
 
@@ -37,15 +46,6 @@ const OnboardingPage = () => {
     e.preventDefault();
     onboardingMutation(formState);
   };
-
-  const handleRandomAvatar = () => {
-    const idx = Math.floor(Math.random() * 100) + 1;
-    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
-    setFormState({ ...formState, profilePic: randomAvatar });
-    setShowUrlInput(false);
-    toast.success("Random avatar generated!");
-  };
-
   const handleUrlSubmit = () => {
     if (!urlInput.trim()) return;
     setFormState({ ...formState, profilePic: urlInput.trim() });
@@ -60,10 +60,24 @@ const OnboardingPage = () => {
     toast.success("Profile picture removed");
   };
 
-  // Generate initials for default avatar
-  const initials = formState.fullName
-    ? formState.fullName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase()
-    : "?";
+  // Handle local file upload - convert to base64 so it can be stored
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Limit file size to 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image too large. Please pick an image under 2MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormState({ ...formState, profilePic: reader.result });
+      toast.success("Photo uploaded!");
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="min-h-screen bg-base-100 flex items-center justify-center p-4">
@@ -73,10 +87,10 @@ const OnboardingPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* ── PROFILE PIC EDITOR ── */}
+            {/* PROFILE PIC EDITOR */}
             <div className="flex flex-col items-center gap-4">
 
-              {/* Avatar Preview using the reusable Avatar component */}
+              {/* Avatar Preview */}
               <div className="relative">
                 <Avatar
                   src={formState.profilePic}
@@ -84,7 +98,7 @@ const OnboardingPage = () => {
                   size="3xl"
                   className="ring-4 ring-base-300 ring-offset-2 ring-offset-base-200"
                 />
-                {/* Remove button — only if pic is set */}
+                {/* Remove button only visible when a pic is set */}
                 {formState.profilePic && (
                   <button
                     type="button"
@@ -99,6 +113,25 @@ const OnboardingPage = () => {
 
               {/* Edit Options */}
               <div className="flex flex-wrap gap-2 justify-center">
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                {/* Upload from device */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="btn btn-outline btn-sm gap-2"
+                >
+                  <CameraIcon className="size-4" />
+                  Upload Photo
+                </button>
+
+                {/* Use image URL */}
                 <button
                   type="button"
                   onClick={() => setShowUrlInput((v) => !v)}
@@ -107,17 +140,9 @@ const OnboardingPage = () => {
                   <LinkIcon className="size-4" />
                   {showUrlInput ? "Cancel" : "Use Image URL"}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleRandomAvatar}
-                  className="btn btn-accent btn-sm gap-2"
-                >
-                  <ShuffleIcon className="size-4" />
-                  Random Avatar
-                </button>
               </div>
 
-              {/* URL Input — shown on toggle */}
+              {/* URL Input shown on toggle */}
               {showUrlInput && (
                 <div className="w-full flex gap-2 items-center animate-in slide-in-from-top-2">
                   <input
@@ -141,7 +166,7 @@ const OnboardingPage = () => {
               )}
 
               <p className="text-xs opacity-50 text-center">
-                You can skip this — your initials will be used as your avatar
+                You can skip this � your initials will be used as your avatar
               </p>
             </div>
 
@@ -204,10 +229,12 @@ const OnboardingPage = () => {
                 <select
                   name="learningLanguage"
                   value={formState.learningLanguage}
-                  onChange={(e) => setFormState({ ...formState, learningLanguage: e.target.value })}
+                  onChange={(e) =>
+                    setFormState({ ...formState, learningLanguage: e.target.value })
+                  }
                   className="select select-bordered w-full"
                 >
-                  <option value="">Select language you're learning</option>
+                  <option value="">Select language you are learning</option>
                   {LANGUAGES.map((lang) => (
                     <option key={`learning-${lang}`} value={lang.toLowerCase()}>
                       {lang}
@@ -256,3 +283,4 @@ const OnboardingPage = () => {
   );
 };
 export default OnboardingPage;
+

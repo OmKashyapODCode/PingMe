@@ -150,10 +150,13 @@ export async function onboardHandler(req, res) {
     if (!updatedUser) return res.status(404).json({ message: "User not found" });
 
     try {
+      // Stream has a 100KB payload limit - base64 images are huge (500KB+)
+      // So we only send the image URL to Stream if it's a real URL, not base64
+      const isBase64 = updatedUser.profilePic?.startsWith("data:");
       await upsertStreamUser({
         id: updatedUser._id.toString(),
         name: updatedUser.fullName,
-        image: updatedUser.profilePic || "",
+        image: isBase64 ? "" : (updatedUser.profilePic || ""),
       });
       console.log(`Stream user updated after onboarding for ${updatedUser.fullName}`);
     } catch (streamError) {

@@ -59,7 +59,19 @@ export async function acceptFriendRequest(requestId) {
   return response.data;
 }
 
+// Reject (delete) a pending friend request
+export async function rejectFriendRequest(requestId) {
+  const response = await axiosInstance.delete(`/users/friend-request/${requestId}/reject`);
+  return response.data;
+}
+
 export async function getStreamToken() {
   const response = await axiosInstance.get("/chat/token");
+  return response.data;
+}
+
+// Update logged-in user's profile
+export async function updateProfile(profileData) {
+  const response = await axiosInstance.put("/users/update-profile", profileData);
   return response.data;
 }

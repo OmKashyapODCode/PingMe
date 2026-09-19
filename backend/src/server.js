@@ -32,7 +32,9 @@ app.use(cors({
   },
   credentials: true,
 }));
-app.use(express.json());
+// Increased limit to 10mb to support base64 encoded profile picture uploads
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);

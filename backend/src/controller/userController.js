@@ -146,3 +146,75 @@ export async function getOutgoingFriendReqs(req, res) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
+// Reject a friend request - just delete it from the database
+export async function rejectFriendRequest(req, res) {
+  try {
+    const { id: requestId } = req.params;
+
+    const friendRequest = await FriendRequest.findById(requestId);
+
+    if (!friendRequest) {
+      return res.status(404).json({ message: "Friend request not found" });
+    }
+
+    // Only the recipient can reject the request
+    if (friendRequest.recipient.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You are not authorized to reject this request" });
+    }
+
+    // Delete the request so it disappears from both users
+    await FriendRequest.findByIdAndDelete(requestId);
+
+    res.status(200).json({ message: "Friend request rejected" });
+  } catch (error) {
+    console.log("Error in rejectFriendRequest controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
+// Update user profile (name, bio, pic, languages, location)
+export async function updateProfile(req, res) {
+  try {
+    const userId = req.user._id;
+
+    // Only allow these fields to be updated
+    const { fullName, bio, profilePic, nativeLanguage, learningLanguage, location } = req.body;
+
+    // Build update object with only fields that were sent
+    const updateData = {};
+    if (fullName !== undefined) updateData.fullName = fullName;
+    if (bio !== undefined) updateData.bio = bio;
+    if (profilePic !== undefined) updateData.profilePic = profilePic;
+    if (nativeLanguage !== undefined) updateData.nativeLanguage = nativeLanguage;
+    if (learningLanguage !== undefined) updateData.learningLanguage = learningLanguage;
+    if (location !== undefined) updateData.location = location;
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update Stream user as well so chat profile stays in sync
+    try {
+      const { upsertStreamUser } = await import("../lib/stream.js");
+      // Stream has a 100KB payload limit, base64 images are 500KB+
+      // Only send a real URL to Stream, skip base64 strings
+      const isBase64 = updatedUser.profilePic?.startsWith("data:");
+      await upsertStreamUser({
+        id: updatedUser._id.toString(),
+        name: updatedUser.fullName,
+        image: isBase64 ? "" : (updatedUser.profilePic || ""),
+      });
+    } catch (streamError) {
+      // Stream update failure should not block profile update
+      console.log("Error updating Stream user:", streamError.message);
+    }
+
+    res.status(200).json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Error in updateProfile controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
