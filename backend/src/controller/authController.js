@@ -1,4 +1,4 @@
-import { upsertStreamUser } from "../lib/stream.js";
+﻿import { upsertStreamUser } from "../lib/stream.js";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 

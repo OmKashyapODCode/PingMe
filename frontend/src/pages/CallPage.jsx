@@ -42,10 +42,17 @@ const CallPage = () => {
       try {
         console.log("Initializing Stream video client...");
 
+        // Stream has a 5KB limit on user data
+        // base64 images are 500KB+, so we only pass real HTTP URLs
+        const safeImage =
+          authUser.profilePic && !authUser.profilePic.startsWith("data:")
+            ? authUser.profilePic
+            : "";
+
         const user = {
           id: authUser._id,
           name: authUser.fullName,
-          image: authUser.profilePic,
+          image: safeImage,
         };
 
         const videoClient = new StreamVideoClient({

@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import useAuthUser from "../hooks/useAuthUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { updateProfile } from "../lib/api";
+import { updateProfile, uploadImageToCloudinary } from "../lib/api";
 import {
   LoaderIcon,
   MapPinIcon,
@@ -278,4 +278,5 @@ const ProfileEditPage = () => {
 };
 
 export default ProfileEditPage;
+
 

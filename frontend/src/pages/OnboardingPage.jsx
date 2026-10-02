@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+ï»¿import { useState, useRef } from "react";
 import useAuthUser from "../hooks/useAuthUser";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { completeOnboarding } from "../lib/api";
+import { completeOnboarding, uploadImageToCloudinary } from "../lib/api";
 import {
   LoaderIcon,
   MapPinIcon,
@@ -166,7 +166,7 @@ const OnboardingPage = () => {
               )}
 
               <p className="text-xs opacity-50 text-center">
-                You can skip this — your initials will be used as your avatar
+                You can skip this ï¿½ your initials will be used as your avatar
               </p>
             </div>
 
@@ -283,4 +283,5 @@ const OnboardingPage = () => {
   );
 };
 export default OnboardingPage;
+
 

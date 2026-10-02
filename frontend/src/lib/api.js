@@ -75,3 +75,9 @@ export async function updateProfile(profileData) {
   const response = await axiosInstance.put("/users/update-profile", profileData);
   return response.data;
 }
+
+// Upload a base64 image to Cloudinary via our backend - returns a real URL
+export async function uploadImageToCloudinary(base64Image) {
+  const response = await axiosInstance.post("/upload/image", { image: base64Image });
+  return response.data.url; // returns the Cloudinary HTTPS URL
+}

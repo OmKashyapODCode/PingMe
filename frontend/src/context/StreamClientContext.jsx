@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+﻿import { createContext, useContext, useEffect, useState } from "react";
 import { StreamChat } from "stream-chat";
 import { useQuery } from "@tanstack/react-query";
 import { getStreamToken } from "../lib/api";
@@ -50,14 +50,17 @@ export const StreamClientProvider = ({ children }) => {
         client = StreamChat.getInstance(STREAM_API_KEY);
 
         if (!client.userID) {
-          await client.connectUser(
-            {
-              id: authUser._id,
-              name: authUser.fullName,
-              image: getSafeImageUrl(authUser.profilePic),
-            },
-            tokenData.token
-          );
+          // Build user object - only include image if it is a real URL (not base64)
+          // Passing image: "" would overwrite Stream's existing avatar with blank
+          const safeImage = getSafeImageUrl(authUser.profilePic);
+          const streamUser = {
+            id: authUser._id,
+            name: authUser.fullName,
+          };
+          if (safeImage) {
+            streamUser.image = safeImage;
+          }
+          await client.connectUser(streamUser, tokenData.token);
         }
         
         // Sync exact unread counts from Stream Chat Server
@@ -134,3 +137,4 @@ export const StreamClientProvider = ({ children }) => {
 };
 
 export const useStreamClient = () => useContext(StreamClientContext);
+

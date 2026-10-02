@@ -3,6 +3,7 @@ import "dotenv/config";
 import authRoutes from "./route/authroute.js";
 import userRoutes from "./route/userroute.js";
 import chatRoutes from "./route/chatroute.js";
+import uploadRoutes from "./route/uploadroute.js";
 import {dbConnect} from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -40,6 +41,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/upload", uploadRoutes);
 
 
 app.listen(PORT,()=>{

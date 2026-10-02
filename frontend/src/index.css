@@ -1,34 +1,207 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-.str-chat__channel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to bottom, #c9e8c9, #b7e7bb);
-  height: 100%;
-}
+/* ================================================================
+   STREAM CHAT - MINIMAL SAFE OVERRIDES
+   Only change colors/radius. Let Stream handle all layout/alignment.
+   ================================================================ */
 
+/* Transparent background so DaisyUI theme shows through */
+.str-chat,
+.str-chat__channel,
 .str-chat__container {
-  max-width: 1200px;
-  width: 100%;
-  height: 80% !important;
-  margin: 0 auto !important;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  background: transparent !important;
 }
 
-.str-chat__list {
-  background-color: #ffffff;
-  padding: 12px;
+.str-chat__list,
+.str-chat__ul {
+  background: transparent !important;
+  padding: 8px 12px !important;
 }
 
 .str-chat__list-notifications {
-  display: none;
+  display: none !important;
 }
 
+/* ── Date Separator ── */
+.str-chat__date-separator-date {
+  background: oklch(var(--b2) / 1) !important;
+  color: oklch(var(--bc) / 0.5) !important;
+  border: 1px solid oklch(var(--b3) / 1) !important;
+  border-radius: 20px !important;
+  font-size: 11px !important;
+  padding: 2px 12px !important;
+}
+
+.str-chat__date-separator-line {
+  background: oklch(var(--b3) / 1) !important;
+}
+
+/* ── MY bubble (right side) ── */
+.str-chat__message--me .str-chat__message-bubble {
+  background: oklch(var(--p) / 1) !important;
+  border-radius: 18px 4px 18px 18px !important;
+}
+
+.str-chat__message--me .str-chat__message-text p,
+.str-chat__message--me .str-chat__message-text {
+  color: oklch(var(--pc) / 1) !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+/* ── OTHER bubble (left side) ── */
+.str-chat__message:not(.str-chat__message--me) .str-chat__message-bubble {
+  background: oklch(var(--b3) / 1) !important;
+  border-radius: 4px 18px 18px 18px !important;
+}
+
+.str-chat__message:not(.str-chat__message--me) .str-chat__message-text p,
+.str-chat__message:not(.str-chat__message--me) .str-chat__message-text {
+  color: oklch(var(--bc) / 1) !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
+}
+
+/* ── Timestamps ── */
+.str-chat__message-simple-timestamp,
+.str-chat__message-timestamp,
+time {
+  font-size: 10px !important;
+  opacity: 0.8 !important; color: oklch(var(--bc) / 0.8) !important;
+}
+
+/* ── Sender name ── */
+.str-chat__message--me .str-chat__message-name {
+  display: none !important;
+}
+
+/* ── Deleted message ── */
+.str-chat__message--deleted .str-chat__message-bubble {
+  background: transparent !important;
+  border: 1px dashed oklch(var(--b3) / 1) !important;
+}
+
+/* ── Channel Header (Stream default - hide it, we use custom) ── */
+.str-chat__channel-header {
+  display: none !important;
+}
+
+/* ── Message Input ── */
 .str-chat__message-input {
-  border-top: 1px solid #ddd;
+  background: oklch(var(--b1) / 1) !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+.str-chat__message-input-inner {
+  background: oklch(var(--b2) / 1) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 6px 12px 6px 16px !important;
+  gap: 4px !important;
+}
+
+.str-chat__message-input-inner:focus-within {
+  border-color: oklch(var(--p) / 0.6) !important;
+}
+
+.str-chat__textarea textarea {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  font-size: 0.875rem !important;
+  color: oklch(var(--bc) / 1) !important;
+  min-height: 20px !important;
+  max-height: 80px !important;
+  padding: 3px 0 !important;
+  resize: none !important;
+  line-height: 1.4 !important;
+}
+
+.str-chat__textarea textarea::placeholder {
+  color: oklch(var(--bc) / 0.35) !important;
+}
+
+/* ── Send Button ── */
+.str-chat__send-button {
+  background: oklch(var(--p) / 1) !important;
+  border-radius: 50% !important;
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  cursor: pointer !important;
+  transition: transform 0.15s !important;
+}
+
+.str-chat__send-button:hover {
+  transform: scale(1.08) !important;
+}
+
+.str-chat__send-button svg {
+  fill: white !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* ── Scrollbar ── */
+.str-chat__list::-webkit-scrollbar {
+  width: 3px;
+}
+.str-chat__list::-webkit-scrollbar-thumb {
+  background: oklch(var(--b3) / 1);
+  border-radius: 999px;
+}
+
+/* ── Message action buttons (hover) ── */
+.str-chat__message-actions-box {
+  background: oklch(var(--b2) / 1) !important;
+  border: 1px solid oklch(var(--b3) / 1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+
+/* ── New message notification ── */
+.str-chat__message-notification {
+  background: oklch(var(--p) / 1) !important;
+  color: white !important;
+  border-radius: 999px !important;
+}
+
+/* ── Thread ── */
+.str-chat__thread {
+  background: oklch(var(--b2) / 1) !important;
+  border-left: 1px solid oklch(var(--b3) / 1) !important;
+}
+
+/* ── Reaction selector ── */
+.str-chat__message-reactions-list-item__count {
+  color: oklch(var(--bc) / 1) !important;
+}
+
+
+/* Make sure text in message actions is visible in dark mode */
+.str-chat__message-actions-list button,
+.str-chat__message-actions-box button,
+.str-chat__message-action {
+  color: oklch(var(--bc) / 1) !important;
+}
+
+.str-chat__message-actions-list button:hover,
+.str-chat__message-actions-box button:hover,
+.str-chat__message-action:hover {
+  background: oklch(var(--b3) / 0.5) !important;
+}
+
+.str-chat__message-actions-box svg {
+  fill: oklch(var(--bc) / 0.8) !important;
 }
